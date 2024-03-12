@@ -1,15 +1,9 @@
-const word = document.querySelector(".wotd");
 const input = document.querySelector(".input");
 
 let wordOfTheDay;
-let playerInput = "";
-
-// input.addEventListener("keydown", (event) => {
-//   if (event.key === "Enter") {
-//     const word = event.target.value;
-//     validateWord(word);
-//   }
-// });
+let buffer = "";
+let pastWords = [];
+let currentRow = 1;
 
 function isLetter(letter) {
   return /^[a-zA-Z]$/.test(letter);
@@ -31,9 +25,19 @@ async function validateWord(word) {
   console.log(data);
 }
 
-function renderWord(word) {
-  for (let i = 0; i < wordOfTheDay.length; i++) {
-    document.querySelector(`.letter-${i}`);
+// TODO: Refactor this section to support the different rows for limited scope.
+// TODO: Need to check each letter in the word and compare it to the word of the day to style it.
+// TODO: This also needs to render past words and style them accordingly.
+async function renderWord(word) {
+  const typedWord = await word;
+  // TODO: Refactor this section to support the different rows for limited scope.
+  for (let i = 0; i < 30; i++) {
+    if (typedWord[i] === "") {
+      document.getElementById(`letter-${i}`).textContent = "";
+    } else if (typedWord[i] != "") {
+      const letter = typedWord[i];
+      document.getElementById(`letter-${i}`).textContent = letter;
+    }
   }
 }
 
@@ -46,13 +50,21 @@ async function getWordOfTheDay() {
 async function init() {
   console.log("Project Initiated!");
   wordOfTheDay = await getWordOfTheDay();
-  word.textContent = wordOfTheDay;
 
   document.addEventListener("keydown", (event) => {
     if (isLetter(event.key)) {
-      playerInput += event.key;
-      renderWord(playerInput);
+      buffer += event.key;
+    } else if (event.key === "Backspace") {
+      buffer = buffer.slice(0, -1);
+    } else if (event.key === "Enter") {
+      validateWord(buffer);
+      pastWords.push(buffer);
+      buffer = "";
+      currentRow++;
+      console.log(pastWords);
     }
+
+    renderWord(buffer);
   });
 }
 
